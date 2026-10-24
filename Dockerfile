@@ -8,12 +8,12 @@ WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/core/package.json packages/core/
-COPY services/access/package.json services/access/
+COPY apps/api/package.json apps/api/
 
 RUN pnpm install --frozen-lockfile
 
 COPY packages/core packages/core
-COPY services/access services/access
+COPY apps/api apps/api
 
 FROM node:22-alpine AS runner
 
@@ -31,7 +31,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /app/packages/core ./packages/core
-COPY --from=build /app/services/access ./services/access
+COPY --from=build /app/apps/api ./apps/api
 
 USER access
 

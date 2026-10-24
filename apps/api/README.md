@@ -16,8 +16,8 @@ pnpm --filter @hardport/access start
 
 | Artifact | Location / npm | Role |
 |----------|----------------|------|
-| **Access service** | `services/access`, npm **`@hardport/access`** | Fastify API you deploy (e.g. `access.thehardport.com`) |
-| **@psyferblock/access** (console) | `packages/access-ui` | Installable Next mount at **`/thp/*`** — router + BFF + widgets ([psyferblock.io](https://psyferblock.io)) |
+| **Access service** | **`apps/api`**, npm **`@hardport/access`** | Fastify API you deploy (e.g. `access.thehardport.com`) |
+| **@psyferblock/access** (console) | Hard Port repo `packages/access-ui` | Installable Next mount — router + BFF + widgets on customer sites |
 
 Customer sites install the **`access`** package, set env keys, and render `<AccessApp basePath="/thp" />`. The console talks to **this service** over HTTP; it is not embedded inside the Fastify process.
 

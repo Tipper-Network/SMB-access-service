@@ -4,6 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.9",
   "scripts": {
+    "dev": "pnpm --filter @hardport/access dev",
     "start": "pnpm --filter @hardport/access start",
     "platform:migrate": "tsx scripts/platform/migrate.ts"
   },

@@ -8,7 +8,7 @@ const accessEnv = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 
 try {
   process.loadEnvFile(accessEnv);
 } catch {
-  // Production: inject env via host. Local: copy services/access/.env.example and run pnpm platform:secrets:local
+  // Production: inject env via host. Local: copy apps/api/.env.example and run pnpm platform:secrets:local
 }
 
 // Connect as the restricted runtime role (hp_access), never as the migration owner:

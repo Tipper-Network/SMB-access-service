@@ -1,25 +1,21 @@
 # Deploy Access API (`SMB-access-service` / `@hardport/access`)
 
-Deploy **only** the platform Access HTTP API (:4001). Console and catalog UI stay on `apps/web` (later: npm `@psyferblock/access`).
+Deploy **only** the platform Access HTTP API (:4001). Console and catalog UI stay on `apps/web` in **The Hard Port** repo (`@psyferblock/access`).
 
-**GitHub:** [Tipper-Network/SMB-access-service](https://github.com/Tipper-Network/SMB-access-service) — must contain `Dockerfile`, `packages/core`, `services/access`, not README-only.
+**GitHub:** [Tipper-Network/SMB-access-service](https://github.com/Tipper-Network/SMB-access-service)
+
+**Layout (locked):** API code lives at **`apps/api`**, not `services/access`. Future Next app → **`apps/web`**. See `REPO-LAYOUT.md` in that repo.
 
 ---
 
-## 0. Sync code to the service repo (from monorepo)
+## 0. Sync `packages/core` from monorepo (optional)
 
-Deploy git root: **`deploy/smb-access-service/`** → [Tipper-Network/SMB-access-service](https://github.com/Tipper-Network/SMB-access-service).  
-Monorepo **`services/access/`** stays dev source; sync copies core + access into the deploy folder.
-
-After changing Access or core:
+Access is developed in **`deploy/smb-access-service/`** (same tree as GitHub). After **`packages/core`** changes in Hard Port:
 
 ```bash
-chmod +x scripts/publish/sync-smb-access-service.sh
 ./scripts/publish/sync-smb-access-service.sh
 cd deploy/smb-access-service
-git add -A
-git commit -m "sync access service for deploy"
-git push origin main
+git add -A && git commit -m "sync core" && git push origin main
 ```
 
 ---
@@ -31,6 +27,7 @@ Use **Neon** or Postgres on the VPS — not the website intake DB.
 From your laptop (owner `DATABASE_URL`):
 
 ```bash
+cd deploy/smb-access-service
 export DATABASE_URL='postgres://OWNER@HOST/hp_platform'
 pnpm platform:migrate
 # Create hp_access_login — scripts/local/ensure-access-login.sql (strong prod password)
@@ -39,6 +36,7 @@ pnpm platform:migrate
 Generate **production** secrets (do not reuse local `.env`):
 
 ```bash
+# from Hard Port monorepo root
 pnpm platform:secrets:local
 ```
 
@@ -54,17 +52,13 @@ pnpm platform:bootstrap -- \
   --origin https://thehardport.com
 ```
 
+(Run bootstrap from Hard Port monorepo; `FIELD_KEYS` must match Access env.)
+
 ---
 
 ## 2. Dokploy / Docker on VPS
 
-**Build context:** repo root (where `Dockerfile` lives).
-
-**Dockerfile path:** `./Dockerfile` (copied by sync script).
-
-**Internal port:** `4001`
-
-**Health check:** `GET /healthz` → `{"ok":true}`
+**Build context:** repo root. **Dockerfile:** `./Dockerfile`. **Port:** `4001`.
 
 ### Required environment variables
 
@@ -73,31 +67,19 @@ pnpm platform:bootstrap -- \
 | `DATABASE_URL` | Runtime role (`hp_access_login` → platform DB) |
 | `HOST` | `0.0.0.0` |
 | `PORT` | `4001` |
-| `ADMIN_ORIGINS` | `https://thehardport.com` (comma-separate if multiple) |
+| `ADMIN_ORIGINS` | `https://thehardport.com` |
 | `COOKIE_SECURE` | `true` |
 | `TRUST_PROXY` | `true` |
-| `IP_PEPPER` | From secrets |
-| `FIELD_KEYS` | From secrets (must match bootstrap) |
-| `INTERNAL_SIGNING_KEYS` | From secrets |
-| `KEYWORD_SESSION_KEYS` | From secrets |
-| `ACCESS_TEST_OTP` | e.g. `123456` until Resend works — then remove |
-| `HP_S3_BUCKET`, `AWS_*`, `HP_S3_PUBLIC_BASE_URL` | If staff uploads should work in prod |
+| `IP_PEPPER`, `FIELD_KEYS`, `INTERNAL_SIGNING_KEYS`, `KEYWORD_SESSION_KEYS` | From secrets |
+| `ACCESS_TEST_OTP` | e.g. `123456` until Resend works |
 
-Optional later: `RESEND_API_KEY`, `MAIL_FROM`.
+Local env template: **`apps/api/.env.example`** (in SMB-access-service repo).
 
-### Reverse proxy
-
-Point **`https://access.thehardport.com`** (or your chosen host) → container `:4001` with TLS.
-
-```bash
-curl -sS https://access.thehardport.com/healthz
-```
+**Smoke:** `curl -sS https://access.thehardport.com/healthz`
 
 ---
 
-## 3. Wire the website (separate deploy)
-
-On `apps/web` host:
+## 3. Wire The Hard Port website
 
 | Variable | Value |
 |----------|--------|
@@ -107,26 +89,13 @@ On `apps/web` host:
 | `HP_TENANT_SLUG` | `hardport` |
 | `NEXT_PUBLIC_SITE_URL` | `https://thehardport.com` |
 
-Redeploy web. Smoke: `/admin/thp/connection` — health + catalog API OK.
-
 ---
 
-## 4. Smoke test
-
-1. `GET https://access.thehardport.com/healthz`
-2. Staff login at `/admin/thp/login` (bootstrap creds + TOTP unless `ACCESS_SKIP_2FA` — **never in prod**)
-3. Public catalog `/thp/catalog` shows published items
-4. Partner OTP with `ACCESS_TEST_OTP` if email not wired
-
----
-
-## Alternative: build from full monorepo on VPS
-
-If you clone the whole Hard Port repo instead of `SMB-access-service`:
+## 4. Local dev (Access repo)
 
 ```bash
-docker build -f services/access/Dockerfile -t hardport-access .
-docker run --env-file access.prod.env -p 4001:4001 hardport-access
+cd deploy/smb-access-service   # or your SMB-access-service clone
+cp apps/api/.env.example apps/api/.env   # fill secrets
+pnpm install
+pnpm --filter @hardport/access dev
 ```
-
-Same env table as above.
