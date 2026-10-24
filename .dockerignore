@@ -1,0 +1,17 @@
+**/node_modules
+**/.output
+**/dist
+**/dist-ssr
+**/generated
+.git
+*.md
+!DOCKER.md
+.env
+.env.*
+.vscode
+.cursor
+coverage
+*.log
+the-hard-port-os
+apps/api/.env
+apps/web/.env

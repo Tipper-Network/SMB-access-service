@@ -1,0 +1,15 @@
+{
+  "name": "@hardport/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}

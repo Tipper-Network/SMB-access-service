@@ -1,27 +1,11 @@
-# Access service (`@hardport/access`)
+# SMB Access Service
 
-HTTP API for the Hard Port **platform**: content, entitlements, partners, keywords (API), staff/partner sessions, and public `pk` routes.
+Platform Access API (`@hardport/access`) — Docker deploy for Dokploy/VPS.
 
-- **Default port:** 4001  
-- **Database role:** `hp_access` on platform Postgres (not the website DB)  
-- **Route catalogue:** [`docs/platform-routes.md`](../../docs/platform-routes.md)  
-- **Architecture:** [`docs/hardport-architecture.md`](../../docs/hardport-architecture.md)
+**Do not edit this tree by hand.** Sync from the Hard Port monorepo:
 
 ```bash
-pnpm platform:migrate   # once, platform DB
-pnpm --filter @hardport/access start
+./scripts/publish/sync-smb-access-service.sh
 ```
 
-## UI vs API (do not confuse)
-
-| Artifact | Location / npm | Role |
-|----------|----------------|------|
-| **Access service** | `services/access`, npm **`@hardport/access`** | Fastify API you deploy (e.g. `access.thehardport.com`) |
-| **@psyferblock/access** (console) | `packages/access-ui` | Installable Next mount at **`/thp/*`** — router + BFF + widgets ([psyferblock.io](https://psyferblock.io)) |
-
-Customer sites install the **`access`** package, set env keys, and render `<AccessApp basePath="/thp" />`. The console talks to **this service** over HTTP; it is not embedded inside the Fastify process.
-
-Website **application review** (`/review`, `apps/api` intake) is **not** part of either package above.
-
-v1 partner portal API: [`docs/access-service-v1.md`](../../docs/access-service-v1.md). Migrate with `pnpm platform:migrate` (includes `006_partner_portal.sql`).
-# SMB-access-service
+See **DEPLOY.md** for database, env, and smoke tests.
